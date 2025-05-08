@@ -1,14 +1,14 @@
-import { requireAuth } from "@/lib/session"
 import { redirect } from "next/navigation"
+import { getSession } from "@/lib/auth"
 
 export default async function DashboardPage() {
-  const user = await requireAuth()
+  const session = await getSession()
 
-  if (!user) {
+  if (!session) {
     redirect("/auth/signin")
   }
 
-  if (user.role === "ADMIN") {
+  if (session.user.role === "ADMIN") {
     redirect("/dashboard/admin")
   } else {
     redirect("/dashboard/chw")

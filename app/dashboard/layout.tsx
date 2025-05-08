@@ -1,7 +1,8 @@
 import type React from "react"
 import { redirect } from "next/navigation"
 import { getSession } from "@/lib/auth"
-import { DashboardNav } from "@/components/dashboard/dashboard-nav"
+import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar"
+import { DashboardTopbar } from "@/components/dashboard/dashboard-topbar"
 
 export default async function DashboardLayout({
   children,
@@ -15,9 +16,18 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <DashboardNav user={session.user} />
-      <div className="flex-1 container mx-auto px-4 py-8">{children}</div>
+    <div className="flex h-screen bg-muted/30">
+      {/* Sidebar */}
+      <DashboardSidebar user={session.user} />
+
+      {/* Main Content */}
+      <div className="flex flex-col flex-1 overflow-hidden">
+        {/* Topbar */}
+        <DashboardTopbar user={session.user} />
+
+        {/* Main Content Area */}
+        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+      </div>
     </div>
   )
 }

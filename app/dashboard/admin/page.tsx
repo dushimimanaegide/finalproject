@@ -2,6 +2,7 @@ import { requireAdmin } from "@/lib/auth"
 import { AdminDashboardStats } from "@/components/dashboard/admin-dashboard-stats"
 import { HealthReportsList } from "@/components/dashboard/health-reports-list"
 import { UsersList } from "@/components/dashboard/users-list"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { prisma } from "@/lib/prisma"
 
 export default async function AdminDashboardPage() {
@@ -9,18 +10,24 @@ export default async function AdminDashboardPage() {
 
   const [users, healthReports, patientVisits] = await Promise.all([
     prisma.user.count(),
-   prisma.healthReport.findMany({
+    prisma.healthReport.findMany({
       include: { user: true },
       orderBy: { createdAt: "desc" },
+      take: 5,
     }),
-   prisma.patientVisit.count(),
+    prisma.patientVisit.count(),
   ])
 
   const pendingReports = healthReports.filter((report) => report.status === "PENDING").length
 
   return (
-    <div className="space-y-8">
-      <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+        <p className="text-muted-foreground mt-1">
+          Welcome back, {admin.name}. Here's what's happening in your health system.
+        </p>
+      </div>
 
       <AdminDashboardStats
         totalUsers={users}
@@ -29,16 +36,26 @@ export default async function AdminDashboardPage() {
         totalVisits={patientVisits}
       />
 
-      <div className="grid md:grid-cols-2 gap-8">
-        <div>
-          <h2 className="text-2xl font-semibold mb-4">Recent Health Reports</h2>
-          <HealthReportsList reports={healthReports.slice(0, 5)} isAdmin={true} />
-        </div>
+      <div className="grid md:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Health Reports</CardTitle>
+            <CardDescription>The latest health reports submitted by CHWs</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <HealthReportsList reports={healthReports} isAdmin={true} />
+          </CardContent>
+        </Card>
 
-        <div>
-          <h2 className="text-2xl font-semibold mb-4">Users Management</h2>
-          <UsersList />
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Users Management</CardTitle>
+            <CardDescription>Manage community health workers and administrators</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <UsersList />
+          </CardContent>
+        </Card>
       </div>
     </div>
   )
