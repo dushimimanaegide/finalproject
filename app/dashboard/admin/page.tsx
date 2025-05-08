@@ -4,7 +4,7 @@ import { HealthReportsList } from "@/components/dashboard/health-reports-list"
 import { UsersList } from "@/components/dashboard/users-list"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { prisma } from "@/lib/prisma"
-
+// comment
 export default async function AdminDashboardPage() {
   const admin = await requireAdmin()
 
