@@ -113,6 +113,7 @@ export function UsersManagementList({ users }: UsersManagementListProps) {
                         <DialogFooter>
                           <Button variant="outline">Edit User</Button>
                           <Button variant="destructive">Deactivate</Button>
+                          <Button variant="destructive">Delete</Button>
                         </DialogFooter>
                       </>
                     )}
