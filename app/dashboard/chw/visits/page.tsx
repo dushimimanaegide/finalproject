@@ -1,16 +1,22 @@
-import { requireAdmin } from "@/lib/auth"
-import { HealthReportsList } from "@/components/dashboard/health-reports-list"
+import { requireAuth } from "@/lib/auth"
+import { redirect } from "next/navigation"
 import { ReportsFilter } from "@/components/dashboard/reports-filter"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { PatientVisitsList } from "@/components/dashboard/patient-visits-list"
 import { getDateRangeFromFilter } from "@/lib/date-filters"
 import { prisma } from "@/lib/prisma"
 
-export default async function AdminReportsPage({
+export default async function CHWVisitsPage({
   searchParams,
 }: {
   searchParams: { [key: string]: string | string[] | undefined }
 }) {
-  await requireAdmin()
+  const user = await requireAuth()
+
+  if (user.role === "ADMIN") {
+    redirect("/dashboard/admin")
+  }
 
   // Get filter parameters
   const filter = (searchParams.filter as string) || "all"
@@ -21,39 +27,37 @@ export default async function AdminReportsPage({
   const { startDate, endDate } = getDateRangeFromFilter(filter, fromDate, toDate)
 
   // Build query conditions
-  let dateCondition = {}
+  const dateCondition: any = {
+    userId: user.id, // Only fetch visits for the current CHW
+  }
+
   if (startDate && endDate) {
-    dateCondition = {
-      createdAt: {
-        gte: startDate,
-        lte: endDate,
-      },
+    dateCondition.createdAt = {
+      gte: startDate,
+      lte: endDate,
     }
   } else if (startDate) {
-    dateCondition = {
-      createdAt: {
-        gte: startDate,
-      },
+    dateCondition.createdAt = {
+      gte: startDate,
     }
   } else if (endDate) {
-    dateCondition = {
-      createdAt: {
-        lte: endDate,
-      },
+    dateCondition.createdAt = {
+      lte: endDate,
     }
   }
 
-  // Fetch reports with filter
-  const healthReports = await prisma.healthReport.findMany({
+  // Fetch patient visits with filter
+  const patientVisits = await prisma.patientVisit.findMany({
     where: dateCondition,
-    include: { user: true },
     orderBy: { createdAt: "desc" },
   })
 
   // Calculate statistics
-  const pendingReports = healthReports.filter((report) => report.status === "PENDING").length
-  const reviewedReports = healthReports.filter((report) => report.status === "REVIEWED").length
-  const resolvedReports = healthReports.filter((report) => report.status === "RESOLVED").length
+  const totalVisits = patientVisits.length
+  const uniquePatients = new Set(patientVisits.map((visit) => visit.patientName)).size
+  const followUpsNeeded = patientVisits.filter(
+    (visit) => visit.followUpDate && new Date(visit.followUpDate) >= new Date(),
+  ).length
 
   // Format date range for display
   let filterLabel = "All Time"
@@ -78,10 +82,8 @@ export default async function AdminReportsPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Health Reports</h1>
-        <p className="text-muted-foreground mt-1">
-          Review and manage health reports submitted by Community Health Workers
-        </p>
+        <h1 className="text-3xl font-bold">Patient Visits</h1>
+        <p className="text-muted-foreground mt-1">View and manage your patient visit records</p>
       </div>
 
       <ReportsFilter />
@@ -89,47 +91,52 @@ export default async function AdminReportsPage({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Pending</CardTitle>
+            <CardTitle className="text-lg">Total Visits</CardTitle>
             <CardDescription>{filterLabel}</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{pendingReports}</div>
-            <p className="text-sm text-muted-foreground">Reports awaiting review</p>
+            <div className="text-3xl font-bold">{totalVisits}</div>
+            <p className="text-sm text-muted-foreground">Patient visits recorded</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Reviewed</CardTitle>
+            <CardTitle className="text-lg">Unique Patients</CardTitle>
             <CardDescription>{filterLabel}</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{reviewedReports}</div>
-            <p className="text-sm text-muted-foreground">Reports in progress</p>
+            <div className="text-3xl font-bold">{uniquePatients}</div>
+            <p className="text-sm text-muted-foreground">Different patients seen</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Resolved</CardTitle>
+            <CardTitle className="text-lg">Follow-ups</CardTitle>
             <CardDescription>{filterLabel}</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{resolvedReports}</div>
-            <p className="text-sm text-muted-foreground">Completed reports</p>
+            <div className="text-3xl font-bold">{followUpsNeeded}</div>
+            <p className="text-sm text-muted-foreground">Upcoming follow-up visits</p>
           </CardContent>
         </Card>
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Health Reports</CardTitle>
-          <CardDescription>
-            {filter !== "all"
-              ? `Showing reports for ${filterLabel}`
-              : "View and manage all health reports from Community Health Workers"}
-          </CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Patient Visits</CardTitle>
+            <CardDescription>
+              {filter !== "all"
+                ? `Showing visits for ${filterLabel}`
+                : "View and manage all your patient visit records"}
+            </CardDescription>
+          </div>
+          <Button asChild>
+            <a href="/dashboard/chw/new-visit">New Visit</a>
+          </Button>
         </CardHeader>
         <CardContent>
-          <HealthReportsList reports={healthReports} isAdmin={true} />
+          <PatientVisitsList visits={patientVisits} />
         </CardContent>
       </Card>
     </div>

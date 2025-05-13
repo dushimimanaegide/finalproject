@@ -1,18 +1,18 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { getCurrentUser } from "./actions/auth-actions"
+import { getSession } from "@/lib/auth"
 
 export default async function Home() {
-  const user = await getCurrentUser()
-  const dashboardPath = user?.role === "ADMIN" ? "/dashboard/admin" : "/dashboard/chw"
-
+ const session = await getSession()
+  const dashboardPath = session?.user.role === "ADMIN" ? "/dashboard/admin" : "/dashboard/chw"
+  
   return (
     <div className="flex min-h-screen flex-col">
       <header className="bg-primary py-4">
         <div className="container mx-auto px-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-white">RHIE</h1>
           <div className="space-x-4">
-            {user ? (
+            {session ? (
               <Link href={dashboardPath}>
                 <Button variant="secondary">Dashboard</Button>
               </Link>
@@ -40,7 +40,7 @@ export default async function Home() {
               Strengthening the capacity of health workers in Rwanda by improving the accessibility, accuracy, and
               utilization of health information systems.
             </p>
-            {!user && (
+            {!session && (
               <Link href="/auth/signup">
                 <Button size="lg" className="font-semibold">
                   Get Started

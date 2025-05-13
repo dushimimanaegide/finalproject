@@ -18,6 +18,7 @@ model User {
   telephone String
   gender    String
   role      Role     @default(CHW)
+  active    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
