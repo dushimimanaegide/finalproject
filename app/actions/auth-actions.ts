@@ -2,9 +2,11 @@
 
 import { redirect } from "next/navigation"
 import { z } from "zod"
-import { prisma } from "@/lib/prisma"
+
 import { cookies } from "next/headers"
 import { verifyPassword } from "@/lib/password"
+import { prisma } from "@/lib/prisma"
+import { Prisma } from "@prisma/client"
 
 // Session cookie name
 const SESSION_COOKIE_NAME = "session_id"
