@@ -3,9 +3,8 @@ import { Button } from "@/components/ui/button"
 import { getSession } from "@/lib/auth"
 
 export default async function Home() {
- const session = await getSession()
-  const dashboardPath = session?.user.role === "ADMIN" ? "/dashboard/admin" : "/dashboard/chw"
-  
+  const session = await getSession()
+
   return (
     <div className="flex min-h-screen flex-col">
       <header className="bg-primary py-4">
@@ -13,20 +12,13 @@ export default async function Home() {
           <h1 className="text-2xl font-bold text-white">RHIE</h1>
           <div className="space-x-4">
             {session ? (
-              <Link href={dashboardPath}>
+              <Link href="/dashboard">
                 <Button variant="secondary">Dashboard</Button>
               </Link>
             ) : (
-              <>
-                <Link href="/auth/signin">
-                  <Button variant="secondary">Sign In</Button>
-                </Link>
-                <Link href="/auth/signup">
-                  <Button variant="outline" className="text-white border-white hover:text-primary">
-                    Sign Up
-                  </Button>
-                </Link>
-              </>
+              <Link href="/auth/signin">
+                <Button variant="secondary">Sign In</Button>
+              </Link>
             )}
           </div>
         </div>
@@ -40,10 +32,10 @@ export default async function Home() {
               Strengthening the capacity of health workers in Rwanda by improving the accessibility, accuracy, and
               utilization of health information systems.
             </p>
-            {!session && (
-              <Link href="/auth/signup">
+            {session && (
+              <Link href="/dashboard">
                 <Button size="lg" className="font-semibold">
-                  Get Started
+                  Go to Dashboard
                 </Button>
               </Link>
             )}

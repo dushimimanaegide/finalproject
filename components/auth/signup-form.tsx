@@ -1,99 +1,137 @@
 "use client"
 
 import { useState } from "react"
-import Link from "next/link"
-import { signUpAction } from "@/app/actions/auth-actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
-import { useRouter } from "next/navigation"
+import { createUserAction } from "@/app/actions/user-actions"
+import { UserPlusIcon } from "lucide-react"
 
-export function SignUpForm() {
-  const route = useRouter()
+export function CreateUserForm() {
+  const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const { toast } = useToast()
 
   async function handleSubmit(formData: FormData) {
     setIsLoading(true)
-    setError(null)
 
-    const result = await signUpAction(formData)
+    try {
+      const result = await createUserAction(formData)
 
-    try{
-      if (result.success) {
-       if(result.user?.role === "ADMIN"){
-        route.push("/dashboard/admin")
-       }else{
-        route.push("/dashboard/chw")
-       }
+      if (result.error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: result.error,
+        })
+      } else if (result.success) {
+        toast({
+          title: "Success",
+          description: result.success,
+        })
+        setIsOpen(false)
+        // Reset form
+        const form = document.getElementById("create-user-form") as HTMLFormElement
+        form?.reset()
       }
-
-    }catch(error:any){
+    } catch (error) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Something went wrong",
+        description: "An unexpected error occurred. Please try again.",
       })
+    } finally {
+      setIsLoading(false)
     }
   }
 
   return (
-    <form action={handleSubmit} className="space-y-6">
-      {error && <div className="bg-destructive/15 text-destructive p-3 rounded-md text-sm">{error}</div>}
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button className="flex items-center gap-2">
+          <UserPlusIcon className="h-4 w-4" />
+          Add New User
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Create New User</DialogTitle>
+          <DialogDescription>
+            Create a new user account. A secure password will be generated automatically and sent via email.
+          </DialogDescription>
+        </DialogHeader>
 
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="name">Full Name</Label>
-          <Input id="name" name="name" placeholder="John Doe" required disabled={isLoading} />
-        </div>
+        <form id="create-user-form" action={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Full Name</Label>
+            <Input id="name" name="name" placeholder="John Doe" required disabled={isLoading} />
+          </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input id="email" name="email" type="email" placeholder="john@example.com" required disabled={isLoading} />
-        </div>
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input id="email" name="email" type="email" placeholder="john@example.com" required disabled={isLoading} />
+          </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
-          <Input id="password" name="password" type="password" required disabled={isLoading} />
-        </div>
+          <div className="space-y-2">
+            <Label htmlFor="telephone">Telephone</Label>
+            <Input id="telephone" name="telephone" placeholder="+250 7XX XXX XXX" required disabled={isLoading} />
+          </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="telephone">Telephone</Label>
-          <Input id="telephone" name="telephone" placeholder="+250 7XX XXX XXX" required disabled={isLoading} />
-        </div>
+          <div className="space-y-2">
+            <Label>Gender</Label>
+            <RadioGroup defaultValue="male" name="gender" className="flex space-x-4">
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="male" id="create-male" disabled={isLoading} />
+                <Label htmlFor="create-male">Male</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="female" id="create-female" disabled={isLoading} />
+                <Label htmlFor="create-female">Female</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="other" id="create-other" disabled={isLoading} />
+                <Label htmlFor="create-other">Other</Label>
+              </div>
+            </RadioGroup>
+          </div>
 
-        <div className="space-y-2">
-          <Label>Gender</Label>
-          <RadioGroup defaultValue="male" name="gender" className="flex space-x-4">
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="male" id="male" />
-              <Label htmlFor="male">Male</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="female" id="female" />
-              <Label htmlFor="female">Female</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="other" id="other" />
-              <Label htmlFor="other">Other</Label>
-            </div>
-          </RadioGroup>
-        </div>
-      </div>
+          <div className="space-y-2">
+            <Label htmlFor="role">Role</Label>
+            <Select name="role" defaultValue="CHW" disabled={isLoading}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="CHW">Community Health Worker</SelectItem>
+                <SelectItem value="ADMIN">Administrator</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-      <Button type="submit" className="w-full" disabled={isLoading}>
-        {isLoading ? "Creating account..." : "Sign Up"}
-      </Button>
+        
 
-      <div className="text-center text-sm">
-        Already have an account?{" "}
-        <Link href="/auth/signin" className="text-primary hover:underline">
-          Sign In
-        </Link>
-      </div>
-    </form>
+          <DialogFooter className="mt-6">
+            <Button type="button" variant="outline" onClick={() => setIsOpen(false)} disabled={isLoading}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Creating..." : "Create User"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   )
 }
