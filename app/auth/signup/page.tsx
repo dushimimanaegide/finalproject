@@ -7,7 +7,7 @@ export default function SignUpPage() {
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold">Create an Account</h1>
           <p className="mt-2 text-muted-foreground">
-            Sign up to access the Rwanda Health Information Enhancement platform
+            Sign up to access the  platform
           </p>
         </div>
         <div className="bg-card p-8 rounded-lg shadow-sm">
