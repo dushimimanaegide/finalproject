@@ -4,97 +4,39 @@ import { redirect } from "next/navigation"
 import { z } from "zod"
 import { prisma } from "@/lib/prisma"
 import { cookies } from "next/headers"
-import { hashPassword, verifyPassword } from "@/lib/password"
+import { verifyPassword } from "@/lib/password"
 
 // Session cookie name
 const SESSION_COOKIE_NAME = "session_id"
-const SESSION_DURATION = 7 * 24 * 60 * 60 
+const SESSION_DURATION = 7 * 24 * 60 * 60
 
-const signUpSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
+const signInSchema = z.object({
   email: z.string().email("Please enter a valid email"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
-  telephone: z.string().min(10, "Please enter a valid telephone number"),
-  gender: z.enum(["male", "female", "other"]),
+  password: z.string().min(1, "Password is required"),
 })
-
-export async function signUpAction(formData: FormData) {
-  const name = formData.get("name") as string
-  const email = formData.get("email") as string
-  const password = formData.get("password") as string
-  const telephone = formData.get("telephone") as string
-  const gender = formData.get("gender") as string
-
-  try {
-    const validatedData = signUpSchema.parse({
-      name,
-      email,
-      password,
-      telephone,
-      gender,
-    })
-
-    const existingUser = await prisma.user.findUnique({
-      where: { email: validatedData.email },
-    })
-
-    if (existingUser) {
-      return { error: "Email already in use" }
-    }
-
-    // Use the custom password hashing function
-    const hashedPassword = await hashPassword(validatedData.password)
-
-    const user = await prisma.user.create({
-      data: {
-        name: validatedData.name,
-        email: validatedData.email,
-        password: hashedPassword,
-        telephone: validatedData.telephone,
-        gender: validatedData.gender,
-      },
-    })
-
-    // Create session after successful signup
-    await createSession(user.id)
-    return { 
-      success: true,
-      user:{
-        id: user.id,
-        role: user.role,
-      }
-     }
-  } catch (error: any) {
-    if (error instanceof z.ZodError) {
-      return { error: error.errors[0].message }
-    }
-    if (error instanceof Error) {
-      console.error("Error in signUpAction:", error)
-      return { error: error.message }
-    }
-    return { error: "Something went wrong. Please try again." }
-  }
-}
 
 export async function signInAction(formData: FormData) {
   try {
     const email = formData.get("email") as string
     const password = formData.get("password") as string
 
-    if (!email || !password) {
-      return { error: "Email and password are required" }
-    }
+    const validatedData = signInSchema.parse({ email, password })
 
     const user = await prisma.user.findUnique({
-      where: { email },
+      where: { email: validatedData.email },
     })
 
     if (!user) {
       return { error: "Invalid email or password" }
     }
 
-    // Use the custom password verification function
-    const isPasswordMatch = await verifyPassword(user.password, password)
+    // Check if user is active
+    if (!user.active) {
+      return { error: "Your account has been deactivated. Please contact an administrator." }
+    }
+
+    // Verify password
+    const isPasswordMatch = await verifyPassword(user.password, validatedData.password)
 
     if (!isPasswordMatch) {
       return { error: "Invalid email or password" }
@@ -102,24 +44,24 @@ export async function signInAction(formData: FormData) {
 
     // Create session after successful login
     await createSession(user.id)
-    return { 
-      success: true,
-      user:{
-        id: user.id,
-        role: user.role,
-      }
-     }
-  } catch (error) {
-    console.error("Login error:", error)
-    return {
-      error:
-        error instanceof Error ? error.message : "Authentication failed. Please check your credentials and try again.",
+
+    // Redirect based on role
+    if (user.role === "ADMIN") {
+      redirect("/dashboard/admin")
+    } else {
+      redirect("/dashboard/chw")
     }
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { error: error.errors[0].message }
+    }
+    console.error("Login error:", error)
+    return { error: "Authentication failed. Please check your credentials and try again." }
   }
 }
 
 export async function signOutAction() {
-  clearSession()
+  await clearSession()
   redirect("/")
 }
 
@@ -142,25 +84,36 @@ async function clearSession() {
 
 export async function getCurrentUser() {
   const cookieStore = await cookies()
-  const  userCookie = cookieStore.get(SESSION_COOKIE_NAME)
+  const userCookie = cookieStore.get(SESSION_COOKIE_NAME)
+
   if (!userCookie) {
     return null
   }
+
   const userId = userCookie.value
+
   try {
     const user = await prisma.user.findFirst({
       where: {
         id: userId,
+        active: true, // Only return active users
       },
       select: {
         id: true,
+        name: true,
+        email: true,
         role: true,
+        active: true,
+        telephone: true,
+        gender: true,
+        createdAt: true,
+        updatedAt: true,
       },
-    });
+    })
 
-    return user;
+    return user
   } catch (error) {
-    console.error("Error getting current user:", error);
-    return null;
+    console.error("Error getting current user:", error)
+    return null
   }
 }

@@ -98,6 +98,11 @@ export function DashboardSidebarContent({ user, initialCollapsed }: DashboardSid
       icon: ClipboardCheckIcon,
     },
     {
+      title: "Patient Form",
+      href: "/dashboard/chw/patient-form",
+      icon: UserIcon,
+    },
+    {
       title: "Help & Resources",
       href: "/dashboard/chw/resources",
       icon: HelpCircleIcon,
