@@ -4,7 +4,7 @@ import React from "react"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-export interface WelcomeEmailData {
+export interface WelcomeEmailData  {
   name: string
   email: string
   password: string
