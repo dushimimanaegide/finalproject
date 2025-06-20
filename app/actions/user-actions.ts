@@ -1,14 +1,12 @@
 "use server"
 
 import { requireAdmin } from "@/lib/auth"
-
+import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 
-
 import { sendWelcomeEmail } from "@/lib/email-service"
 import { generatePassword, hashPassword } from "@/lib/password"
-import { prisma } from "@/lib/prisma"
 
 const updateUserSchema = z.object({
   id: z.string(),
@@ -192,6 +190,12 @@ export async function createUserAction(formData: FormData) {
       role,
     })
 
+    // Validate email format more strictly
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(validatedData.email)) {
+      return { error: "Please enter a valid email address" }
+    }
+
     // Check if email is already in use
     const existingUser = await prisma.user.findUnique({
       where: { email: validatedData.email },
@@ -218,29 +222,36 @@ export async function createUserAction(formData: FormData) {
       },
     })
 
-    // Send welcome email
-    const emailResult = await sendWelcomeEmail({
-      name: newUser.name,
-      email: newUser.email,
-      password: temporaryPassword,
-      role: newUser.role,
-    })
+    // Send welcome email with better error handling
+    try {
+      const emailResult = await sendWelcomeEmail({
+        name: newUser.name,
+        email: newUser.email,
+        password: temporaryPassword,
+        role: newUser.role,
+      })
 
-    revalidatePath("/dashboard/admin/users")
+      revalidatePath("/dashboard/admin/users")
 
-    if (emailResult.success) {
-      if (emailResult.error) {
-        // Success but with a warning (test mode)
+      if (emailResult.success) {
+        if (emailResult.error) {
+          // Success but with a warning (test mode)
+          return {
+            success: `User created successfully! ${emailResult.error}`,
+          }
+        }
         return {
-          success: `User created successfully! ${emailResult.error}`,
+          success: `User created successfully! Welcome email sent to ${newUser.email}.`,
+        }
+      } else {
+        return {
+          success: `User created successfully, but email failed: ${emailResult.error}. Manual credentials - Email: ${newUser.email}, Password: ${temporaryPassword}`,
         }
       }
+    } catch (emailError) {
+      console.error("Email sending failed:", emailError)
       return {
-        success: `User created successfully! Welcome email sent to ${newUser.email}.`,
-      }
-    } else {
-      return {
-        success: `User created successfully, but email failed: ${emailResult.error}. Manual credentials - Email: ${newUser.email}, Password: ${temporaryPassword}`,
+        success: `User created successfully, but email failed to send. Manual credentials - Email: ${newUser.email}, Password: ${temporaryPassword}`,
       }
     }
   } catch (error) {
