@@ -16,42 +16,66 @@ export function SignInForm() {
   const { toast } = useToast()
 
   async function handleSubmit(formData: FormData) {
-    try{
+    try {
       setIsLoading(true)
       setError(null)
-  
+
       const result = await signInAction(formData)
-  
-      if (result.success) {
-        if(result.user?.role === "ADMIN"){  
-          route.push("/dashboard/admin")
-        }else{
-          route.push("/dashboard/chw")
-        }
-        toast({
-          title: "Login successful",
-        })
-        route.refresh()
-    }
-    }catch(error){
+
+      if ("error" in result) {
+        // ✅ FIXED: Ensures setError is given a string, not undefined
+        setError(result.error ?? "Unknown error")
+        setIsLoading(false)
+        return
+      }
+
+      // Only redirect if login succeeded
+      toast({ title: "Login successful" })
+
+      if (result.user?.role === "ADMIN") {
+        route.push("/dashboard/admin")
+      } else {
+        route.push("/dashboard/chw")
+      }
+
+      route.refresh()
+    } catch (error: any) {
+      console.error("Unexpected login error:", error)
+      setError(error?.message ?? "Something went wrong")
       setIsLoading(false)
     }
   }
 
-
   return (
     <form action={handleSubmit} className="space-y-6">
-      {error && <div className="bg-destructive/15 text-destructive p-3 rounded-md text-sm">{error}</div>}
+      {error && (
+        <div className="bg-destructive/15 text-destructive p-3 rounded-md text-sm">
+          {error}
+        </div>
+      )}
 
       <div className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
-          <Input id="email" name="email" type="email" placeholder="john@example.com" required disabled={isLoading} />
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="john@example.com"
+            required
+            disabled={isLoading}
+          />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
-          <Input id="password" name="password" type="password" required disabled={isLoading} />
+          <Input
+            id="password"
+            name="password"
+            type="password"
+            required
+            disabled={isLoading}
+          />
         </div>
       </div>
 
@@ -59,12 +83,7 @@ export function SignInForm() {
         {isLoading ? "Signing in..." : "Sign In"}
       </Button>
 
-      <div className="text-center text-sm">
-        Don't have an account?{" "}
-        <Link href="/auth/signup" className="text-primary hover:underline">
-          Sign Up
-        </Link>
-      </div>
+      
     </form>
   )
 }

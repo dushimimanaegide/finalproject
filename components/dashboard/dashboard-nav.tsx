@@ -18,7 +18,7 @@ export function DashboardNav({ user }: DashboardNavProps) {
       <div className="container mx-auto px-4 flex justify-between items-center">
         <div className="flex items-center space-x-8">
           <Link href="/">
-            <h1 className="text-2xl font-bold text-white">RHIE</h1>
+            <h1 className="text-2xl font-bold text-white">RCHW</h1>
           </Link>
 
           <nav className="hidden md:flex space-x-6">

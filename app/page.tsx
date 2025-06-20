@@ -9,7 +9,7 @@ export default async function Home() {
     <div className="flex min-h-screen flex-col">
       <header className="bg-primary py-4">
         <div className="container mx-auto px-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-white">RHIE</h1>
+          <h1 className="text-2xl font-bold text-white">RCHW</h1>
           <div className="space-x-4">
             {session ? (
               <Link href="/dashboard">
@@ -27,7 +27,7 @@ export default async function Home() {
       <main className="flex-1">
         <section className="py-20 bg-gradient-to-b from-primary/10 to-background">
           <div className="container mx-auto px-4 text-center">
-            <h2 className="text-4xl font-bold mb-6">Rwanda Health Information Enhancement</h2>
+            <h2 className="text-4xl font-bold mb-6">Rwanda  community Health worker</h2>
             <p className="text-xl max-w-3xl mx-auto mb-10">
               Strengthening the capacity of health workers in Rwanda by improving the accessibility, accuracy, and
               utilization of health information systems.
@@ -74,7 +74,7 @@ export default async function Home() {
 
       <footer className="bg-muted py-8">
         <div className="container mx-auto px-4 text-center">
-          <p>© 2023 Rwanda Health Information Enhancement. All rights reserved.</p>
+          <p>© 2023 Rwanda  community Health worker . All rights reserved.</p>
         </div>
       </footer>
     </div>

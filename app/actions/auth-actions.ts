@@ -6,9 +6,7 @@ import { z } from "zod"
 import { cookies } from "next/headers"
 import { verifyPassword } from "@/lib/password"
 import { prisma } from "@/lib/prisma"
-import { Prisma } from "@prisma/client"
 
-// Session cookie name
 const SESSION_COOKIE_NAME = "session_id"
 const SESSION_DURATION = 7 * 24 * 60 * 60
 
@@ -32,27 +30,21 @@ export async function signInAction(formData: FormData) {
       return { error: "Invalid email or password" }
     }
 
-    // Check if user is active
     if (!user.active) {
       return { error: "Your account has been deactivated. Please contact an administrator." }
     }
 
-    // Verify password
     const isPasswordMatch = await verifyPassword(user.password, validatedData.password)
 
     if (!isPasswordMatch) {
       return { error: "Invalid email or password" }
     }
 
-    // Create session after successful login
     await createSession(user.id)
 
-    // Redirect based on role
-    if (user.role === "ADMIN") {
-      redirect("/dashboard/admin")
-    } else {
-      redirect("/dashboard/chw")
-    }
+    // ✅ Return user to the client to redirect from there
+    return { user }
+
   } catch (error) {
     if (error instanceof z.ZodError) {
       return { error: error.errors[0].message }
@@ -62,14 +54,8 @@ export async function signInAction(formData: FormData) {
   }
 }
 
-export async function signOutAction() {
-  await clearSession()
-  redirect("/")
-}
-
-// Helper functions for session management
 async function createSession(userId: string) {
-  const cookieStore = await cookies()
+  const cookieStore = cookies()
 
   cookieStore.set(SESSION_COOKIE_NAME, userId, {
     httpOnly: true,
@@ -79,26 +65,23 @@ async function createSession(userId: string) {
   })
 }
 
-async function clearSession() {
-  const cookieStore = await cookies()
+export async function signOutAction() {
+  const cookieStore = cookies()
   cookieStore.delete(SESSION_COOKIE_NAME)
+  redirect("/")
 }
 
 export async function getCurrentUser() {
-  const cookieStore = await cookies()
+  const cookieStore = cookies()
   const userCookie = cookieStore.get(SESSION_COOKIE_NAME)
 
-  if (!userCookie) {
-    return null
-  }
-
-  const userId = userCookie.value
+  if (!userCookie) return null
 
   try {
     const user = await prisma.user.findFirst({
       where: {
-        id: userId,
-        active: true, // Only return active users
+        id: userCookie.value,
+        active: true,
       },
       select: {
         id: true,

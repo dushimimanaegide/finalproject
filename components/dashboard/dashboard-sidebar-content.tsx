@@ -139,7 +139,7 @@ export function DashboardSidebarContent({ user, initialCollapsed }: DashboardSid
         <div className={cn("h-16 border-b flex items-center px-4", collapsed ? "justify-center" : "justify-between")}>
           {!collapsed && (
             <Link href="/" className="flex items-center">
-              <span className="text-xl font-bold text-primary">RHIE</span>
+              <span className="text-xl font-bold text-primary">RCHW</span>
             </Link>
           )}
 

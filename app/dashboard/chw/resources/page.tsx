@@ -342,14 +342,14 @@ export default async function CHWResourcesPage() {
                   Technical Support
                 </CardTitle>
                 <CardDescription>
-                  For issues with the RHIE system, login problems, or technical questions
+                  For issues with the RCHW system, login problems, or technical questions
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <span className="text-sm">📧 Email:</span>
-                    <span className="text-sm font-medium">support@rhie.rw</span>
+                    <span className="text-sm font-medium">support@rchw.rw</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm">📞 Phone:</span>
@@ -376,7 +376,7 @@ export default async function CHWResourcesPage() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <span className="text-sm">📧 Email:</span>
-                    <span className="text-sm font-medium">clinical@rhie.rw</span>
+                    <span className="text-sm font-medium">clinical@rchw.rw</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm">📞 Phone:</span>
