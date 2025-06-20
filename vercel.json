@@ -5,7 +5,7 @@
   "regions": ["iad1"],
   "functions": {
     "app/**/*.ts": {
-      "maxDuration": 30
+      "maxDuration":  30
     },
     "app/**/*.tsx": {
       "maxDuration": 30
