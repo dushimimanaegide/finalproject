@@ -1,89 +1,146 @@
 import { requireAuth } from "@/lib/auth"
 import { redirect } from "next/navigation"
-import Link from "next/link"
-import { CHWDashboardStats } from "@/components/dashboard/chw-dashboard-stats"
-import { HealthReportsList } from "@/components/dashboard/health-reports-list"
-import { PatientVisitsList } from "@/components/dashboard/patient-visits-list"
-import { Button } from "@/components/ui/button"
+import { ReportsFilter } from "@/components/dashboard/reports-filter"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ClipboardCheckIcon, ActivityIcon } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { PatientVisitsList } from "@/components/dashboard/patient-visits-list"
+
+import { getDateRangeFromFilter } from "@/lib/date-filters"
 import { prisma } from "@/lib/prisma"
 
-export default async function CHWDashboardPage() {
+interface CHWVisitsPageProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}
+
+export default async function CHWVisitsPage({ searchParams }: CHWVisitsPageProps) {
   const user = await requireAuth()
 
   if (user.role === "ADMIN") {
     redirect("/dashboard/admin")
   }
 
-  const [healthReports, patientVisits] = await Promise.all([
-    prisma.healthReport.findMany({
-      where: { userId: user.id },
-      orderBy: { createdAt: "desc" },
-      take: 5,
-    }),
-    prisma.patientVisit.findMany({
-      where: { userId: user.id },
-      orderBy: { createdAt: "desc" },
-      take: 5,
-    }),
-  ])
+  // Await searchParams before accessing properties
+  const params = await searchParams
+
+  // Get filter parameters
+  const filter = (params.filter as string) || "all"
+  const fromDate = params.from as string
+  const toDate = params.to as string
+
+  // Get date range based on filter
+  const { startDate, endDate } = getDateRangeFromFilter(filter, fromDate, toDate)
+
+  // Build query conditions
+  const dateCondition: any = {
+    userId: user.id, // Only fetch visits for the current CHW
+  }
+
+  if (startDate && endDate) {
+    dateCondition.createdAt = {
+      gte: startDate,
+      lte: endDate,
+    }
+  } else if (startDate) {
+    dateCondition.createdAt = {
+      gte: startDate,
+    }
+  } else if (endDate) {
+    dateCondition.createdAt = {
+      lte: endDate,
+    }
+  }
+
+  // Fetch patient visits with filter
+  const patientVisits = await prisma.patientVisit.findMany({
+    where: dateCondition,
+    orderBy: { createdAt: "desc" },
+  })
+
+  // Calculate statistics
+  const totalVisits = patientVisits.length
+  const uniquePatients = new Set(patientVisits.map((visit) => visit.patientName)).size
+  const followUpsNeeded = patientVisits.filter(
+    (visit) => visit.followUpDate && new Date(visit.followUpDate) >= new Date(),
+  ).length
+
+  // Format date range for display
+  let filterLabel = "All Time"
+  if (filter === "today") {
+    filterLabel = "Today"
+  } else if (filter === "yesterday") {
+    filterLabel = "Yesterday"
+  } else if (filter === "this-week") {
+    filterLabel = "This Week"
+  } else if (filter === "this-month") {
+    filterLabel = "This Month"
+  } else if (filter === "custom" && (fromDate || toDate)) {
+    if (fromDate && toDate) {
+      filterLabel = `${new Date(fromDate).toLocaleDateString()} - ${new Date(toDate).toLocaleDateString()}`
+    } else if (fromDate) {
+      filterLabel = `From ${new Date(fromDate).toLocaleDateString()}`
+    } else if (toDate) {
+      filterLabel = `Until ${new Date(toDate).toLocaleDateString()}`
+    }
+  }
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Community Health Worker Dashboard</h1>
-        <p className="text-muted-foreground mt-1">Welcome back, {user.name}. Here's a summary of your activities.</p>
+        <h1 className="text-3xl font-bold">Patient Visits</h1>
+        <p className="text-muted-foreground mt-1">View and manage your patient visit records</p>
       </div>
 
-      <CHWDashboardStats
-        totalReports={healthReports.length}
-        pendingReports={healthReports.filter((report) => report.status === "PENDING").length}
-        totalVisits={patientVisits.length}
-      />
+      <ReportsFilter />
 
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
-          <CardHeader>
-            <CardTitle>Recent Health Reports</CardTitle>
-            <CardDescription>Your most recent health reports</CardDescription>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Total Visits</CardTitle>
+            <CardDescription>{filterLabel}</CardDescription>
           </CardHeader>
           <CardContent>
-            <HealthReportsList reports={healthReports} isAdmin={false} />
+            <div className="text-3xl font-bold">{totalVisits}</div>
+            <p className="text-sm text-muted-foreground">Patient visits recorded</p>
           </CardContent>
         </Card>
-
         <Card>
-          <CardHeader>
-            <CardTitle>Recent Patient Visits</CardTitle>
-            <CardDescription>Your most recent patient visits</CardDescription>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Unique Patients</CardTitle>
+            <CardDescription>{filterLabel}</CardDescription>
           </CardHeader>
           <CardContent>
-            <PatientVisitsList visits={patientVisits} />
+            <div className="text-3xl font-bold">{uniquePatients}</div>
+            <p className="text-sm text-muted-foreground">Different patients seen</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg">Follow-ups</CardTitle>
+            <CardDescription>{filterLabel}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">{followUpsNeeded}</div>
+            <p className="text-sm text-muted-foreground">Upcoming follow-up visits</p>
           </CardContent>
         </Card>
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>Create new reports or record patient visits</CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Patient Visits</CardTitle>
+            <CardDescription>
+              {filter !== "all"
+                ? `Showing visits for ${filterLabel}`
+                : "View and manage all your patient visit records"}
+            </CardDescription>
+          </div>
+          <Button asChild>
+            <a href="/dashboard/chw/new-visit">New Visit</a>
+          </Button>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Link href="/dashboard/chw/new-report">
-              <Button className="w-full">
-                <ClipboardCheckIcon className="mr-2 h-4 w-4" />
-                Create Health Report
-              </Button>
-            </Link>
-            <Link href="/dashboard/chw/new-visit">
-              <Button className="w-full" variant="outline">
-                <ActivityIcon className="mr-2 h-4 w-4" />
-                Record Patient Visit
-              </Button>
-            </Link>
-          </div>
+          <PatientVisitsList visits={patientVisits} />
         </CardContent>
       </Card>
     </div>

@@ -12,7 +12,6 @@ import {
   ActivityIcon,
   ClipboardCheckIcon,
   BarChartIcon,
-  SettingsIcon,
   HelpCircleIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -46,7 +45,7 @@ export function DashboardSidebarContent({ user, initialCollapsed }: DashboardSid
     setMobileOpen(!mobileOpen)
   }
 
-  // Admin navigation items
+  // Admin navigation items (removed Settings)
   const adminNavItems = [
     {
       title: "Dashboard",
@@ -68,14 +67,9 @@ export function DashboardSidebarContent({ user, initialCollapsed }: DashboardSid
       href: "/dashboard/admin/analytics",
       icon: BarChartIcon,
     },
-    {
-      title: "Settings",
-      href: "/dashboard/admin/settings",
-      icon: SettingsIcon,
-    },
   ]
 
-  // CHW navigation items
+  // CHW navigation items (removed Settings)
   const chwNavItems = [
     {
       title: "Dashboard",

@@ -2,20 +2,24 @@ import { requireAdmin } from "@/lib/auth"
 import { HealthReportsList } from "@/components/dashboard/health-reports-list"
 import { ReportsFilter } from "@/components/dashboard/reports-filter"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+
 import { getDateRangeFromFilter } from "@/lib/date-filters"
 import { prisma } from "@/lib/prisma"
 
-export default async function AdminReportsPage({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined }
-}) {
+interface AdminReportsPageProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}
+
+export default async function AdminReportsPage({ searchParams }: AdminReportsPageProps) {
   await requireAdmin()
 
+  // Await searchParams before accessing properties
+  const params = await searchParams
+
   // Get filter parameters
-  const filter = (searchParams.filter as string) || "all"
-  const fromDate = searchParams.from as string
-  const toDate = searchParams.to as string
+  const filter = (params.filter as string) || "all"
+  const fromDate = params.from as string
+  const toDate = params.to as string
 
   // Get date range based on filter
   const { startDate, endDate } = getDateRangeFromFilter(filter, fromDate, toDate)

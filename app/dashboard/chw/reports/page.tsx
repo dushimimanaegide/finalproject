@@ -1,27 +1,31 @@
 import { Button } from "@/components/ui/button"
 import { requireAuth } from "@/lib/auth"
 import { redirect } from "next/navigation"
+import { CHWReportsList } from "@/components/dashboard/chw-reports-list"
 import { ReportsFilter } from "@/components/dashboard/reports-filter"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+
 import { getDateRangeFromFilter } from "@/lib/date-filters"
 import { prisma } from "@/lib/prisma"
-import { CHWReportsList } from "@/components/dashboard/chw-reports-list"
 
-export default async function CHWReportsPage({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined }
-}) {
+interface CHWReportsPageProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}
+
+export default async function CHWReportsPage({ searchParams }: CHWReportsPageProps) {
   const user = await requireAuth()
 
   if (user.role === "ADMIN") {
     redirect("/dashboard/admin")
   }
 
+  // Await searchParams before accessing properties
+  const params = await searchParams
+
   // Get filter parameters
-  const filter = (searchParams.filter as string) || "all"
-  const fromDate = searchParams.from as string
-  const toDate = searchParams.to as string
+  const filter = (params.filter as string) || "all"
+  const fromDate = params.from as string
+  const toDate = params.to as string
 
   // Get date range based on filter
   const { startDate, endDate } = getDateRangeFromFilter(filter, fromDate, toDate)
