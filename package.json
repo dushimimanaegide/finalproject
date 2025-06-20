@@ -2,7 +2,6 @@
   "name": "rwanda-health-system",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "pnpm@9.12.0",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -58,7 +57,7 @@
     "react-hook-form": "^7.54.1",
     "react-resizable-panels": "^2.1.7",
     "recharts": "^2.15.0",
-    "resend": "^3.5.0",
+    "resend": "^3.2.0",
     "sonner": "^1.7.1",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
@@ -76,6 +75,6 @@
   },
   "engines": {
     "node": ">=18.0.0",
-    "pnpm": ">=9.0.0"
+    "npm": ">=8.0.0"
   }
 }
