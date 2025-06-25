@@ -22,7 +22,7 @@
     /* Paths and Aliases */
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*":  ["./*"]
     },
 
     /* Next.js plugin */
