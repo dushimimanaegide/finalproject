@@ -6,17 +6,14 @@ interface DashboardTopbarProps {
   user: AuthUser
 }
 
-export async function DashboardTopbar({ user }:  DashboardTopbarProps) {
-  // Fetch notifications based on user role
+export async function DashboardTopbar({ user }: DashboardTopbarProps) {
   let notifications = []
 
   if (user.role === "ADMIN") {
-    // Get pending reports count for admin
     const pendingReportsCount = await prisma.healthReport.count({
       where: { status: "PENDING" },
     })
 
-    // Get new users count
     const newUsersCount = await prisma.user.count({
       where: {
         role: "CHW",
@@ -39,7 +36,6 @@ export async function DashboardTopbar({ user }:  DashboardTopbarProps) {
       },
     ]
   } else {
-    // Get CHW's reports that were recently reviewed
     const reviewedReportsCount = await prisma.healthReport.count({
       where: {
         userId: user.id,
@@ -52,7 +48,6 @@ export async function DashboardTopbar({ user }:  DashboardTopbarProps) {
       },
     })
 
-    // Get upcoming follow-ups
     const upcomingFollowUpsCount = await prisma.patientVisit.count({
       where: {
         userId: user.id,

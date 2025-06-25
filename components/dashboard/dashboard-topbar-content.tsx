@@ -23,13 +23,15 @@ import {
 import type { AuthUser } from "@/lib/auth"
 import { signOutAction } from "@/app/actions/auth-actions"
 
+interface Notification {
+  id: string
+  title: string
+  time: string
+}
+
 interface DashboardTopbarContentProps {
   user: AuthUser
-  notifications?: {
-    id: string
-    title: string
-    time: string
-  }[]
+  notifications?: Notification[]
 }
 
 export function DashboardTopbarContent({
