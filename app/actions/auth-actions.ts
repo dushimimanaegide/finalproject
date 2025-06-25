@@ -4,8 +4,9 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { cookies } from "next/headers";
-import { verifyPassword } from "@/lib/password";
-import { prisma } from "@/lib/prisma";
+import { verifyPassword } from '../../lib/password'
+import { prisma } from '../../lib/prisma'
+
 // ...rest of your signInAction logic
 
 const SESSION_COOKIE_NAME = "session_id"
