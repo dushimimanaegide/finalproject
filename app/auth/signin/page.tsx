@@ -1,5 +1,5 @@
 import { getCurrentUser } from "../../actions/auth-actions"
-import { SignInForm } from "@/components/auth/signin-form"
+import { SignInForm } from "../../../components/auth/signin-form"
 import { redirect } from "next/navigation"
 
 export default async function SignInPage() {
