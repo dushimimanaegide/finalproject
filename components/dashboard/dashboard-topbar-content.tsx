@@ -12,15 +12,30 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { MenuIcon, BellIcon, UserIcon, LogOutIcon, HelpCircleIcon, ShieldIcon } from "lucide-react"
+import {
+  MenuIcon,
+  BellIcon,
+  UserIcon,
+  LogOutIcon,
+  HelpCircleIcon,
+  ShieldIcon,
+} from "lucide-react"
 import type { AuthUser } from "@/lib/auth"
 import { signOutAction } from "@/app/actions/auth-actions"
 
 interface DashboardTopbarContentProps {
   user: AuthUser
+  notifications?: {
+    id: string
+    title: string
+    time: string
+  }[]
 }
 
-export function DashboardTopbarContent({ user }: DashboardTopbarContentProps) {
+export function DashboardTopbarContent({
+  user,
+  notifications = [],
+}: DashboardTopbarContentProps) {
   const [isSigningOut, setIsSigningOut] = useState(false)
 
   const handleSignOut = async () => {
@@ -44,13 +59,20 @@ export function DashboardTopbarContent({ user }: DashboardTopbarContentProps) {
       <div className="flex h-full items-center justify-between px-4">
         {/* Left side - Mobile menu button */}
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" className="md:hidden" onClick={toggleMobileSidebar}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            onClick={toggleMobileSidebar}
+          >
             <MenuIcon className="h-5 w-5" />
           </Button>
 
           {/* Breadcrumb or page title */}
           <div className="hidden md:block">
-            <h1 className="text-lg font-semibold">{user.role === "ADMIN" ? "Admin Dashboard" : "CHW Dashboard"}</h1>
+            <h1 className="text-lg font-semibold">
+              {user.role === "ADMIN" ? "Admin Dashboard" : "CHW Dashboard"}
+            </h1>
           </div>
         </div>
 
@@ -59,9 +81,11 @@ export function DashboardTopbarContent({ user }: DashboardTopbarContentProps) {
           {/* Notifications */}
           <Button variant="ghost" size="icon" className="relative">
             <BellIcon className="h-5 w-5" />
-            <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-xs text-white flex items-center justify-center">
-              3
-            </span>
+            {notifications.length > 0 && (
+              <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-xs text-white flex items-center justify-center">
+                {notifications.length}
+              </span>
+            )}
             <span className="sr-only">Notifications</span>
           </Button>
 
@@ -86,7 +110,10 @@ export function DashboardTopbarContent({ user }: DashboardTopbarContentProps) {
                 <div className="flex flex-col space-y-2">
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-medium leading-none">{user.name}</p>
-                    <Badge variant={user.role === "ADMIN" ? "default" : "secondary"} className="text-xs">
+                    <Badge
+                      variant={user.role === "ADMIN" ? "default" : "secondary"}
+                      className="text-xs"
+                    >
                       {user.role === "ADMIN" ? (
                         <>
                           <ShieldIcon className="h-3 w-3 mr-1" />
@@ -97,7 +124,9 @@ export function DashboardTopbarContent({ user }: DashboardTopbarContentProps) {
                       )}
                     </Badge>
                   </div>
-                  <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                  <p className="text-xs leading-none text-muted-foreground">
+                    {user.email}
+                  </p>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
