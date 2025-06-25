@@ -1,22 +1,19 @@
-// components/auth/signin-form.tsx
-"use client";
-import { useState } from "react";
+"use client"
 
-import { signInAction } from "../../app/actions/auth-actions";
-// check alias
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import { useRouter } from "next/navigation";
-
-// ...rest of your SignInForm component code
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { signInAction } from "@/app/actions/auth-actions"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+import { useToast } from "@/hooks/use-toast"
 
 export function SignInForm() {
-  const route = useRouter()
+  const router = useRouter()
+  const { toast } = useToast()
+
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const { toast } = useToast()
 
   async function handleSubmit(formData: FormData) {
     try {
@@ -33,16 +30,18 @@ export function SignInForm() {
 
       toast({ title: "Login successful" })
 
+      // Redirect based on role
       if (result.user?.role === "ADMIN") {
-        route.push("/dashboard/admin")
+        router.push("/dashboard/admin")
       } else {
-        route.push("/dashboard/chw")
+        router.push("/dashboard/chw")
       }
 
-      route.refresh()
+      router.refresh()
     } catch (error: any) {
       console.error("Unexpected login error:", error)
       setError(error?.message ?? "Something went wrong")
+    } finally {
       setIsLoading(false)
     }
   }
