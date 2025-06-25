@@ -6,8 +6,15 @@ interface DashboardTopbarProps {
   user: AuthUser
 }
 
+// Define the notification type to match your existing interface
+interface Notification {
+  id: string
+  title: string
+  time: string
+}
+
 export async function DashboardTopbar({ user }: DashboardTopbarProps) {
-  let notifications = []
+  let notifications: Notification[] = []
 
   if (user.role === "ADMIN") {
     const pendingReportsCount = await prisma.healthReport.count({
