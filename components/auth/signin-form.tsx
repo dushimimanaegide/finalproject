@@ -4,9 +4,9 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { signInAction } from "../../app/actions/auth-actions"
 import { Input } from "../ui/input"
-import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button"
-import { useToast } from "@/hooks/use-toast"
+import { Label } from "../ui/label"
+import { Button } from "../ui/button"
+import { useToast } from "../../hooks/use-toast"
 
 export function SignInForm() {
   const router = useRouter()
