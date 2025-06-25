@@ -6,7 +6,7 @@ interface DashboardTopbarProps {
   user: AuthUser
 }
 
-export async function DashboardTopbar({ user }: DashboardTopbarProps) {
+export async function DashboardTopbar({ user }:  DashboardTopbarProps) {
   // Fetch notifications based on user role
   let notifications = []
 
