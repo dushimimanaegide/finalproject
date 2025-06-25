@@ -1,11 +1,12 @@
-"use server"
+// app/actions/auth-actions.ts
+"use server";
 
-import { redirect } from "next/navigation"
-import { z } from "zod"
-
-import { cookies } from "next/headers"
-import { verifyPassword } from "@/lib/password"
-import { prisma } from "@/lib/prisma"
+import { redirect } from "next/navigation";
+import { z } from "zod";
+import { cookies } from "next/headers";
+import { verifyPassword } from "@/lib/password";
+import { prisma } from "@/lib/prisma";
+// ...rest of your signInAction logic
 
 const SESSION_COOKIE_NAME = "session_id"
 const SESSION_DURATION = 7 * 24 * 60 * 60
