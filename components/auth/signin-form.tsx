@@ -23,13 +23,11 @@ export function SignInForm() {
       const result = await signInAction(formData)
 
       if ("error" in result) {
-        // ✅ FIXED: Ensures setError is given a string, not undefined
         setError(result.error ?? "Unknown error")
         setIsLoading(false)
         return
       }
 
-      // Only redirect if login succeeded
       toast({ title: "Login successful" })
 
       if (result.user?.role === "ADMIN") {
@@ -82,8 +80,6 @@ export function SignInForm() {
       <Button type="submit" className="w-full" disabled={isLoading}>
         {isLoading ? "Signing in..." : "Sign In"}
       </Button>
-
-      
     </form>
   )
 }
