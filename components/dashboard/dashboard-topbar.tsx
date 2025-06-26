@@ -2,18 +2,17 @@ import { prisma } from "@/lib/prisma"
 import { DashboardTopbarContent } from "./dashboard-topbar-content"
 import type { AuthUser } from "@/lib/auth"
 
-interface DashboardTopbarProps {
-  user: AuthUser
-   notifications?: Notification[]
-}
-
-// Define the notification type to match your existing interface
 interface Notification {
   id: string
   title: string
   time: string
 }
 
+interface DashboardTopbarProps {
+  user: AuthUser
+}
+
+// This must be an async Server Component
 export async function DashboardTopbar({ user }: DashboardTopbarProps) {
   let notifications: Notification[] = []
 

@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage }  from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import {
   MenuIcon,
@@ -23,20 +23,17 @@ import {
 import type { AuthUser } from "@/lib/auth"
 import { signOutAction } from "@/app/actions/auth-actions"
 
-// Notification type
 interface Notification {
   id: string
   title: string
   time: string
 }
 
-// Props interface
 export interface DashboardTopbarContentProps {
   user: AuthUser
   notifications?: Notification[]
 }
 
-// Component
 export function DashboardTopbarContent({
   user,
   notifications = [],
@@ -62,7 +59,6 @@ export function DashboardTopbarContent({
   return (
     <header className="h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-full items-center justify-between px-4">
-        {/* Left side */}
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
@@ -80,9 +76,7 @@ export function DashboardTopbarContent({
           </div>
         </div>
 
-        {/* Right side */}
         <div className="flex items-center gap-4">
-          {/* Notifications */}
           <Button variant="ghost" size="icon" className="relative">
             <BellIcon className="h-5 w-5" />
             {notifications.length > 0 && (
@@ -93,7 +87,6 @@ export function DashboardTopbarContent({
             <span className="sr-only">Notifications</span>
           </Button>
 
-          {/* User dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-10 w-10 rounded-full">
