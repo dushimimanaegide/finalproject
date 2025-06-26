@@ -23,17 +23,20 @@ import {
 import type { AuthUser } from "@/lib/auth"
 import { signOutAction } from "@/app/actions/auth-actions"
 
+// Notification type
 interface Notification {
   id: string
   title: string
   time: string
 }
 
-interface DashboardTopbarContentProps {
+// Props interface
+export interface DashboardTopbarContentProps {
   user: AuthUser
   notifications?: Notification[]
 }
 
+// Component
 export function DashboardTopbarContent({
   user,
   notifications = [],
@@ -59,7 +62,7 @@ export function DashboardTopbarContent({
   return (
     <header className="h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-full items-center justify-between px-4">
-        {/* Left side - Mobile menu button */}
+        {/* Left side */}
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
@@ -70,7 +73,6 @@ export function DashboardTopbarContent({
             <MenuIcon className="h-5 w-5" />
           </Button>
 
-          {/* Breadcrumb or page title */}
           <div className="hidden md:block">
             <h1 className="text-lg font-semibold">
               {user.role === "ADMIN" ? "Admin Dashboard" : "CHW Dashboard"}
@@ -78,7 +80,7 @@ export function DashboardTopbarContent({
           </div>
         </div>
 
-        {/* Right side - User menu and notifications */}
+        {/* Right side */}
         <div className="flex items-center gap-4">
           {/* Notifications */}
           <Button variant="ghost" size="icon" className="relative">

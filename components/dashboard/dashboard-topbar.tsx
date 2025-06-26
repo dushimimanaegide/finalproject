@@ -4,6 +4,7 @@ import type { AuthUser } from "@/lib/auth"
 
 interface DashboardTopbarProps {
   user: AuthUser
+   notifications?: Notification[]
 }
 
 // Define the notification type to match your existing interface
