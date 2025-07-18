@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
 import { Search } from "lucide-react"
+import { PrintHealthReport } from "@/components/print/print-health-report"
+import { PrintAllReports } from "@/components/print/print-all-reports"
 
 interface HealthReport {
   id: string
@@ -18,6 +20,7 @@ interface HealthReport {
   createdAt: Date
   user?: {
     name: string
+    email: string
   }
 }
 
@@ -33,9 +36,7 @@ export function HealthReportsList({ reports, isAdmin }: HealthReportsListProps) 
 
   async function handleStatusChange(id: string, status: "PENDING" | "REVIEWED" | "RESOLVED") {
     setUpdatingId(id)
-
     const result = await updateHealthReportStatusAction(id, status)
-
     if (result.error) {
       toast({
         variant: "destructive",
@@ -48,7 +49,6 @@ export function HealthReportsList({ reports, isAdmin }: HealthReportsListProps) 
         description: result.success,
       })
     }
-
     setUpdatingId(null)
   }
 
@@ -70,16 +70,20 @@ export function HealthReportsList({ reports, isAdmin }: HealthReportsListProps) 
 
   return (
     <div className="space-y-4">
-      <div className="relative">
-        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Search reports by title, location, or reporter..."
-          className="pl-8"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
+      <div className="flex items-center justify-between gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search reports by title, location, or reporter..."
+            className="pl-8"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        {isAdmin && filteredReports.length > 0 && (
+          <PrintAllReports reports={filteredReports} title="Health Reports Summary" />
+        )}
       </div>
-
       <div className="border rounded-md">
         <Table>
           <TableHeader>
@@ -89,13 +93,13 @@ export function HealthReportsList({ reports, isAdmin }: HealthReportsListProps) 
               <TableHead>Location</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Date</TableHead>
-              {isAdmin && <TableHead>Actions</TableHead>}
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredReports.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={isAdmin ? 6 : 4} className="text-center py-8">
+                <TableCell colSpan={isAdmin ? 6 : 5} className="text-center py-8">
                   No reports match your search criteria
                 </TableCell>
               </TableRow>
@@ -115,26 +119,29 @@ export function HealthReportsList({ reports, isAdmin }: HealthReportsListProps) 
                     </Badge>
                   </TableCell>
                   <TableCell>{new Date(report.createdAt).toLocaleDateString()}</TableCell>
-                  {isAdmin && (
-                    <TableCell>
-                      <Select
-                        defaultValue={report.status}
-                        onValueChange={(value) =>
-                          handleStatusChange(report.id, value as "PENDING" | "REVIEWED" | "RESOLVED")
-                        }
-                        disabled={updatingId === report.id}
-                      >
-                        <SelectTrigger className="w-[130px]">
-                          <SelectValue placeholder="Update status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="PENDING">Pending</SelectItem>
-                          <SelectItem value="REVIEWED">Reviewed</SelectItem>
-                          <SelectItem value="RESOLVED">Resolved</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                  )}
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <PrintHealthReport report={report} />
+                      {isAdmin && (
+                        <Select
+                          defaultValue={report.status}
+                          onValueChange={(value) =>
+                            handleStatusChange(report.id, value as "PENDING" | "REVIEWED" | "RESOLVED")
+                          }
+                          disabled={updatingId === report.id}
+                        >
+                          <SelectTrigger className="w-[130px]">
+                            <SelectValue placeholder="Update status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="PENDING">Pending</SelectItem>
+                            <SelectItem value="REVIEWED">Reviewed</SelectItem>
+                            <SelectItem value="RESOLVED">Resolved</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    </div>
+                  </TableCell>
                 </TableRow>
               ))
             )}
