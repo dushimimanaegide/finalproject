@@ -53,7 +53,7 @@ export default async function CHWVisitsPage({ searchParams }: CHWVisitsPageProps
   // Fetch patient visits with filter
   const patientVisits = await prisma.patientVisit.findMany({
     where: dateCondition,
-    orderBy: { createdAt: "desc" },
+    orderBy: { createdAt: "desc"  },
   })
 
   // Calculate statistics
